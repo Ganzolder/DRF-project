@@ -7,12 +7,18 @@ from rest_framework.generics import (
     DestroyAPIView,
 )
 from course.models import Course, Lesson
-from course.serializer import CourseSerializer, LessonSerializer
+from course.serializer import CourseSerializer, LessonSerializer, CourseDetailSerializer, PaymentSerializer
+from users.models import Payment
 
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
-    serializer_class = CourseSerializer
+
+    def get_serializer_class(self):
+        print(self.action)
+        if self.action == "retrieve":
+            return CourseDetailSerializer
+        return CourseSerializer
 
 
 class LessonCreateApiView(CreateAPIView):

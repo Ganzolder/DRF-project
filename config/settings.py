@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "course",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -65,7 +66,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"]
+}
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -124,3 +127,5 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", False) == "True"
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", False) == "True"
+
+
