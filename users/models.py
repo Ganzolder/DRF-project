@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.db.models import RESTRICT
+from django.core.exceptions import ValidationError
 from course.models import Lesson, Course
 
 NULLABLE = {"blank": True, "null": True}
@@ -40,7 +41,7 @@ class User(AbstractUser):
 class Payment(models.Model):
 
     user = models.ForeignKey(
-        User, verbose_name="Пользователь", on_delete=models.SET_NULL, **NULLABLE
+        User, verbose_name="Пользователь", on_delete=RESTRICT
     )
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Дата оплаты"
@@ -51,14 +52,25 @@ class Payment(models.Model):
     purchased_course = models.ForeignKey(
         Course, verbose_name="Оплаченный курс", on_delete=models.SET_NULL, **NULLABLE
     )
-    payment_sum = models.SmallIntegerField(
+    payment_sum = models.PositiveIntegerField(
         verbose_name="Сумма оплаты", **NULLABLE
     )
     payment_type = models.CharField(
         max_length=50,
-        verbose_name="Результат попытки",
-        **NULLABLE,
+        verbose_name="Тип платежа"
     )
+
+    def clean(self):
+        super().clean()
+        if self.purchased_lesson and self.purchased_course:
+            if self.purchased_lesson.course == self.purchased_course:
+                raise ValidationError("Нельзя одновременно купить курс и урок из этого же курса.")
+        if not self.purchased_lesson and not self.purchased_course:
+            raise ValidationError("Вы должны указать либо урок, либо курс.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Платеж"

@@ -7,8 +7,7 @@ from rest_framework.generics import (
     DestroyAPIView,
 )
 from course.models import Course, Lesson
-from course.serializer import CourseSerializer, LessonSerializer, CourseDetailSerializer, PaymentSerializer
-from users.models import Payment
+from course.serializer import CourseSerializer, LessonSerializer, CourseDetailSerializer
 
 
 class CourseViewSet(ModelViewSet):

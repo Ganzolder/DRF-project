@@ -21,10 +21,13 @@ class CourseDetailSerializer(ModelSerializer):
     lessons_counts_course = SerializerMethodField()
     lessons = SerializerMethodField()
 
-    def get_lessons(self, course):
+    @staticmethod
+    def get_lessons(course):
         lessons = Lesson.objects.filter(course=course)
         return LessonSerializer(lessons, many=True).data
-    def get_lessons_counts_course(self, course):
+
+    @staticmethod
+    def get_lessons_counts_course(course):
         return Lesson.objects.filter(course=course).count()
 
     class Meta:
@@ -36,6 +39,3 @@ class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
-
-
-
