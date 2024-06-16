@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import RESTRICT
 from django.core.exceptions import ValidationError
-from course.models import Lesson, Course
+
 
 NULLABLE = {"blank": True, "null": True}
 
@@ -36,6 +36,9 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+
+
+from course.models import Lesson, Course
 
 
 class Payment(models.Model):

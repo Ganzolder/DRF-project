@@ -1,3 +1,4 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import (
     CreateAPIView,
@@ -8,6 +9,7 @@ from rest_framework.generics import (
 )
 from course.models import Course, Lesson
 from course.serializer import CourseSerializer, LessonSerializer, CourseDetailSerializer
+from users.permissions import IsModer, IsNotModerator, IsOwner, IsOwnerOrModerator
 
 
 class CourseViewSet(ModelViewSet):
@@ -19,27 +21,48 @@ class CourseViewSet(ModelViewSet):
             return CourseDetailSerializer
         return CourseSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def get_permissions(self):
+        print(self.action)
+        if self.action in ["create", "destroy"]:
+            print(True)
+            self.permission_classes = (~IsModer,)
+        elif self.action in ["update", "retrieve"]:
+            self.permission_classes = (IsModer,)
+        return super().get_permissions()
+
 
 class LessonCreateApiView(CreateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
 
+    permission_classes = [IsAuthenticated, IsNotModerator]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class LessonListApiView(ListAPIView):
     queryset = Lesson.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerOrModerator]
     serializer_class = LessonSerializer
 
 
 class LessonRetrieveApiView(RetrieveAPIView):
     queryset = Lesson.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerOrModerator]
     serializer_class = LessonSerializer
 
 
 class LessonUpdateApiView(UpdateAPIView):
     queryset = Lesson.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerOrModerator]
     serializer_class = LessonSerializer
 
 
 class LessonDestroyApiView(DestroyAPIView):
     queryset = Lesson.objects.all()
+    permission_classes = [IsAuthenticated, IsNotModerator, IsOwner]
     serializer_class = LessonSerializer
