@@ -9,9 +9,10 @@ class IsModer(permissions.BasePermission):
 
 
 class IsNotModerator(permissions.BasePermission):
+    message = 'Adding not allowed 2.'
+
     def has_permission(self, request, view):
-        request.user.groups.filter(name="moders").exists()
-        return False
+        return not request.user.groups.filter(name="moders").exists()
 
 
 class IsOwner(permissions.BasePermission):
