@@ -1,3 +1,4 @@
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
 
 from course.models import Course, Lesson, Subscription
@@ -7,9 +8,18 @@ from users.models import Payment
 
 class CourseSerializer(ModelSerializer):
     name = CharField(validators=[validate_materials])
+    subscription = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = "__all__"
+        fields = ['pk', 'name', 'preview', 'description', 'subscription']
+
+    def get_subscription(self, obj):
+        user = self.context['request'].user
+        try:
+            subscription = Subscription.objects.get(user=user, course=obj)
+            return SubscriptionSerializer(subscription).data
+        except Subscription.DoesNotExist:
+            return None
 
 
 class LessonSerializer(ModelSerializer):
