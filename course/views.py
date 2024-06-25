@@ -1,4 +1,7 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import (
     CreateAPIView,
@@ -7,13 +10,15 @@ from rest_framework.generics import (
     UpdateAPIView,
     DestroyAPIView,
 )
-from course.models import Course, Lesson
+from course.models import Course, Lesson, Subscription
+from course.pagination import CustomPagination
 from course.serializer import CourseSerializer, LessonSerializer, CourseDetailSerializer
 from users.permissions import IsModer, IsNotModerator, IsOwner, IsOwnerOrModerator
 
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
+    pagination_class = CustomPagination
 
     def get_serializer_class(self):
 
@@ -33,6 +38,17 @@ class CourseViewSet(ModelViewSet):
             self.permission_classes = (IsModer,)
         return super().get_permissions()
 
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Subscription.objects.filter(user=user, course=obj).exists()
+        return False
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class LessonCreateApiView(CreateAPIView):
     queryset = Lesson.objects.all()
@@ -48,6 +64,7 @@ class LessonListApiView(ListAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerOrModerator]
     serializer_class = LessonSerializer
+    pagination_class = CustomPagination
 
 
 class LessonRetrieveApiView(RetrieveAPIView):
@@ -66,3 +83,22 @@ class LessonDestroyApiView(DestroyAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsNotModerator, IsOwner]
     serializer_class = LessonSerializer
+
+
+class SubscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk, *args, **kwargs):
+        user = request.user
+        course = get_object_or_404(Course, pk=pk)
+
+        subscription = Subscription.objects.filter(user=user, course=course)
+
+        if subscription.exists():
+            subscription.delete()
+            message = 'Подписка удалена'
+        else:
+            Subscription.objects.create(user=user, course=course)
+            message = 'Подписка добавлена'
+
+        return Response({"message": message})

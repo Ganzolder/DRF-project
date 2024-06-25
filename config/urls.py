@@ -6,4 +6,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("course/", include("course.urls", namespace="course")),
     path("users/", include("users.urls", namespace='users')),
+    path('apidocs/', include('apidocs.urls')),
 ]

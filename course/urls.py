@@ -6,7 +6,7 @@ from course.views import (
     LessonListApiView,
     LessonCreateApiView,
     LessonDestroyApiView,
-    LessonRetrieveApiView,
+    LessonRetrieveApiView, SubscriptionView,
 )
 from course.views import CourseViewSet
 from course.apps import CourseConfig
@@ -14,7 +14,7 @@ from course.apps import CourseConfig
 app_name = CourseConfig.name
 
 router = SimpleRouter()
-router.register("", CourseViewSet)
+router.register("", CourseViewSet, basename='course')
 
 
 urlpatterns = [
@@ -27,6 +27,7 @@ urlpatterns = [
     path(
         "lesson/<int:pk>/delete/", LessonDestroyApiView.as_view(), name="lesson_delete"
     ),
+    path('subscribe/<int:pk>/', SubscriptionView.as_view(), name='subscribe'),
 ]
 
 urlpatterns += router.urls
